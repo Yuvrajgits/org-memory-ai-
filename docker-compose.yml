@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: org-memory-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80
+    volumes:
+      - ./backend/data:/app/data
+      - ./backend/uploaded_files:/app/uploaded_files
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_URL=http://localhost:8000
+    container_name: org-memory-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  faiss_data:
+  uploaded_files:
