@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: org-memory-ai-backend
+    runtime: docker
+    dockerContext: .
+    dockerfilePath: Dockerfile.backend
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "*" 
+      - key: ENV
+        value: production
+    region: singapore # Optional: chose a region close to user or default
+    plan: free

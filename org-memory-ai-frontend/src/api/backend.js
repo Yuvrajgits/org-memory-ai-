@@ -2,19 +2,25 @@ const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 /* -------------------- DOCUMENTS -------------------- */
 
-export async function uploadDocument(file) {
+export async function uploadDocument(file, adminKey) {
   const form = new FormData();
   form.append("file", file);
 
+  const headers = {};
+  if (adminKey) {
+    headers["X-Admin-Key"] = adminKey;
+  }
+
   const res = await fetch(`${BASE}/documents/upload`, {
     method: "POST",
+    headers: headers,
     body: form,
   });
 
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.detail || "Upload failed");
+    throw new Error(data.detail?.message || data.detail || "Upload failed");
   }
 
   return data;

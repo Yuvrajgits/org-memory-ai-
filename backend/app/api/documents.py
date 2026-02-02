@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Header
 import os
 import shutil
 
@@ -6,6 +6,7 @@ from app.utils.text_extractor import extract_text_from_pdf
 from app.utils.text_splitter import split_text
 from app.services.embedding_service import embed_texts
 from app.core.dependencies import get_faiss_store
+from app.core.config import ADMIN_SECRET_KEY
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -14,7 +15,20 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...),
+    x_admin_key: str = Header(None, alias="X-Admin-Key")
+):
+    # Validate admin key
+    if x_admin_key != ADMIN_SECRET_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error_code": "UNAUTHORIZED",
+                "message": "Invalid or missing admin key"
+            }
+        )
+    
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files allowed")
 

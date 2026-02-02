@@ -6,12 +6,14 @@ import { uploadDocument } from "../../api/backend"
 
 export function UploadModal({ isOpen, onClose }) {
     const [file, setFile] = React.useState(null)
+    const [adminKey, setAdminKey] = React.useState("")
     const [status, setStatus] = React.useState("idle") // idle, uploading, success, error
     const [message, setMessage] = React.useState("")
 
     React.useEffect(() => {
         if (isOpen) {
             setFile(null)
+            setAdminKey("")
             setStatus("idle")
             setMessage("")
         }
@@ -28,9 +30,15 @@ export function UploadModal({ isOpen, onClose }) {
     const handleUpload = async () => {
         if (!file) return
 
+        if (!adminKey.trim()) {
+            setStatus("error")
+            setMessage("Admin key is required")
+            return
+        }
+
         setStatus("uploading")
         try {
-            await uploadDocument(file)
+            await uploadDocument(file, adminKey)
             setStatus("success")
             setMessage("Document uploaded successfully!")
             setTimeout(() => {
@@ -68,6 +76,20 @@ export function UploadModal({ isOpen, onClose }) {
                             <p className="text-sm font-medium">{file ? file.name : "Click or drag to select a file"}</p>
                             <p className="text-xs">Supported: PDF, TXT, MD</p>
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="admin-key" className="text-sm font-medium">
+                            Admin Key <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                            id="admin-key"
+                            type="password"
+                            value={adminKey}
+                            onChange={(e) => setAdminKey(e.target.value)}
+                            placeholder="Enter admin key"
+                            className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
                     </div>
 
                     {status === "error" && (
